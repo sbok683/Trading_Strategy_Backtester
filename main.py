@@ -1,31 +1,32 @@
 from data import load_data
 from strategy import ma_crossover_strategy
+from backtester import run_backtest
 import matplotlib.pyplot as plt
 
-# 1. Load data
-data = load_data()
+# Load data
+data = load_data("AAPL")
 
-# 2. Run strategy
+# Run strategy
 data = ma_crossover_strategy(data)
 
-# 3. Plot
-plt.figure(figsize=(14,7))
-plt.plot(data['Close'], label='Close Price', color='blue')
-plt.plot(data['ma_short'], label='MA 20', color='orange')
-plt.plot(data['ma_long'], label='MA 50', color='purple')
+# Run backtest
+data = run_backtest(data)
 
-# Buy signals
-plt.scatter(data.index[data['position'] == 1],
-            data['Close'][data['position'] == 1],
-            marker='^', color='green', s=100, label='Buy')
+# Print latest portfolio value
+print(data[["Close","ma_short","ma_long","position","portfolio_value"]].tail(20))
 
-# Sell signals
-plt.scatter(data.index[data['position'] == -1],
-            data['Close'][data['position'] == -1],
-            marker='v', color='red', s=100, label='Sell')
-
-plt.title('MA Crossover Strategy')
-plt.xlabel('Date')
-plt.ylabel('Price')
-plt.legend()
+# Plot portfolio value
+data["portfolio_value"].plot(title="Portfolio Value Over Time", figsize=(12,6))
+plt.xlabel("Date")
+plt.ylabel("Portfolio Value")
 plt.show()
+start_value = data["portfolio_value"].iloc[0]
+end_value = data["portfolio_value"].iloc[-1]
+profit = end_value - start_value
+percent_return = (profit / start_value) * 100
+
+print(f"Start Portfolio Value: ${start_value:.2f}")
+print(f"End Portfolio Value:   ${end_value:.2f}")
+print(f"Profit:               ${profit:.2f}")
+print(f"Percent Return:       {percent_return:.2f}%")
+
